@@ -105,13 +105,11 @@ class Processor(object):
             for epoch in range(self.config.epochs):
                 training_range = tqdm.tqdm(range(train_steps))
                 training_range.set_description("Epoch %d, Iter %d | loss: " % (epoch, 0))
-                res = 0.0
                 log_res = 0.0
                 random.shuffle(train)
                 for i in training_range:
                     inputs, labels = self.get_batch_data(train[i*self.config.batch_size: (i+1)*self.config.batch_size])
                     loss = self.train_one_step(inputs, labels)
-                    res += loss
                     log_res += loss
                     if i > 0 and i % self.config.log_interval == 0:
                         log_res /= self.config.log_interval
@@ -121,15 +119,13 @@ class Processor(object):
                         metric_res = self.evaluate(self.store.eval)
                         for key, value in metric_res.items():
                             writer.add_scalar(key, value, epoch * train_steps + i)
-                res /= train_steps
-                if res < min_loss:
-                    min_loss = res
-                    best_para = self.model.state_dict()
+                        if metric_res['loss/eval'] < min_loss:
+                            min_loss = metric_res['loss/eval']
+                            best_para = self.model.state_dict()
         except KeyboardInterrupt:
             writer.close()
             print('-' * 89)
             print('Exiting from training early')
 
         self.model.load_state_dict(best_para)
-        print('Train finished, min_loss {:.3f}'.format(min_loss))
         self.evaluate(self.store.test, True)

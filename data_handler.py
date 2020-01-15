@@ -61,7 +61,7 @@ class DataHandler:
         with open(store_path, 'wb') as f:
             pickle.dump(groups, f)
         random.shuffle(groups)
-        d1, d2 = int(len(groups)*0.85), int(len(groups)*0.9)
+        d1, d2 = int(len(groups)*0.8), int(len(groups)*0.9)
         self.train = groups[:d1]
         self.eval = groups[d1:d2]
         self.test = groups[d2:]
