@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Bootstrap 实例 - 一个简单的网页</title>
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<style>
+    .fakeimg {
+        height: 150px;
+         background: #aaa;
+    }
+  </style>
+</head>
+<body>
+<!--<div class="jumbotron text-center" style="margin-bottom:0">-->
+<!--  <h1>Cornell and IMDB Movie Corpus</h1>-->
+<!--</div>-->
+{% load static %}
+
+    <img src="{% static "background2.png" %}" width="100%" height="280" />
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+<!--      <a class="navbar-brand" href="#">简介</a>-->
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+           <li ><a href="{% url 'test' %}">简介</a></li>
+        <li class="active"><a href="{% url 'predict_gender' %}">预测人物性别</a></li>
+        <li><a href="{% url 'predict_character' %}">预测电影人物</a></li>
+        <li><a href="{% url 'predict_rating' %}">预测电影评分</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+  <div class="row">
+    <div class="col-sm-4">
+<form action="/predict_gender/" method="post"> {% csrf_token %}
+        <th>输入对话：</th>
+        <input type="text" name="predict_gender_conversation"
+        style="height:200px; width:450px"/>
+        <input type="submit" value="提交">
+        <br>
+
+    </form>
+         </div>
+    <div class="col-sm-8">
+
+<h1>人物性别预测结果：</h1>
+    {% for item in predict_gender_result%}
+    <p>{{ item }}</p>
+    {% endfor %}
+            </div>
+  </div>
+
+<!-- JavaScript 放置在文档最后面可以使页面加载速度更快 -->
+    <!-- 可选: 包含 jQuery 库 -->
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <!-- 可选: 合并了 Bootstrap JavaScript 插件 -->
+    <script src="https://apps.bdimg.com/libs/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>

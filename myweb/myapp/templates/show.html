@@ -1,0 +1,25 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>输出</title>
+</head>
+<body>
+    <h1>信息输出</h1>
+    <table>
+    <tr>
+        <th>用户名：</th>
+        <th>治疗方案：</th>
+        <th>DNN的输出：</th>
+    </tr>
+    {% for line in people_list %}
+    <tr>
+        <td>{{line.username}}</td>
+        <td>{{line.password}}</td>
+
+
+    </tr>
+    {% endfor %}
+    </table>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Bootstrap 实例 - 一个简单的网页</title>
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<style>
+    .fakeimg {
+        height: 150px;
+         background: #aaa;
+    }
+  </style>
+</head>
+<body>
+<div class="jumbotron text-center" style="margin-bottom:0">
+  <h1>Cornell and IMDB Movie Corpus</h1>
+</div>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">数据集</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="{% url 'myinsert' %}">预测评分</a></li>
+        <li><a href="#">页面 2</a></li>
+        <li><a href="#">页面 3</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+    <h1>信息输入</h1>
+    {% for item in data%}
+    <p>{{ item }}</p>
+    {% endfor %}
+    <form action="/insert/" method="post"> {% csrf_token %}
+        <th>用户名字：</th>
+        <input type="text" name="username"/>
+        <br>
+        <th>文本输入：</th>
+        <input type="password" name="password"/>
+        <input type="submit" value="提交">
+    </form>
+    <div class="container">
+      <h2>表格</h2>
+      <p>创建响应式表格 (将在小于768px的小型设备下水平滚动)。另外：添加交替单元格的背景色：</p>
+      <div class="table-responsive">
+       <table class="table table-striped table-bordered">
+         <thead>
+           <tr>
+             <th>#</th>
+             <th>Name</th>
+             <th>Street</th>
+           </tr>
+         </thead>
+         <tbody>
+           <tr>
+             <td>1</td>
+             <td>Anna Awesome</td>
+             <td>Broome Street</td>
+           </tr>
+           <tr>
+             <td>2</td>
+             <td>Debbie Dallas</td>
+             <td>Houston Street</td>
+           </tr>
+           <tr>
+             <td>3</td>
+             <td>John Doe</td>
+             <td>Madison Street</td>
+           </tr>
+         </tbody>
+       </table>
+      </div>
+
+      <h2>图像</h2>
+      <p>创建响应式图片(将扩展到父元素)。 另外：图片以椭圆型展示：</p>
+      <img src="show.jpg" class="img-responsive img-circle" alt="Cinque Terre" width="304" height="236">
+
+      <h2>图标</h2>
+      <p>插入图标:</p>
+      <p>云图标: <span class="glyphicon glyphicon-cloud"></span></p>
+      <p>信件图标: <span class="glyphicon glyphicon-envelope"></span></p>
+      <p>搜索图标: <span class="glyphicon glyphicon-search"></span></p>
+      <p>打印图标: <span class="glyphicon glyphicon-print"></span></p>
+      <p>下载图标：<span class="glyphicon glyphicon-download"></span></p>
+    </div>
+
+    <!-- JavaScript 放置在文档最后面可以使页面加载速度更快 -->
+    <!-- 可选: 包含 jQuery 库 -->
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <!-- 可选: 合并了 Bootstrap JavaScript 插件 -->
+    <script src="https://apps.bdimg.com/libs/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+</body>
+</html>
