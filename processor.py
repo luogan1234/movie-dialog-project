@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import torch.optim as optim
+from torch.utils.tensorboard import SummaryWriter
 from sklearn import metrics
 import os
 import json
@@ -45,6 +46,38 @@ class Processor(object):
                 predicts = np.argmax(predicts, 1)
         return predicts, loss
     
+    def evaluate(self, data, is_print=False):
+        self.model.eval()
+        eval_steps = (len(data) - 1) // self.config.batch_size + 1
+        labels_all = np.array([])
+        predicts_all = np.array([])
+        res = 0.0
+        for i in range(eval_steps):
+            inputs, labels = self.get_batch_data(data[i*self.config.batch_size: (i+1)*self.config.batch_size])
+            predicts, loss = self.eval_one_step(inputs, labels)
+            res += loss
+            labels_all = np.append(labels_all, labels)
+            predicts_all = np.append(predicts_all, predicts)
+        self.model.train()
+        res /= eval_steps
+        labels_all = labels_all.flatten()
+        predicts_all = predicts_all.flatten()
+        acc = metrics.accuracy_score(labels_all, predicts_all)
+        p = metrics.precision_score(labels_all, predicts_all, average='weighted')
+        r = metrics.recall_score(labels_all, predicts_all, average='weighted')
+        f1 = metrics.f1_score(labels_all, predicts_all, average='weighted')
+
+        metric_res = {'loss/eval': res, 'metrics/acc': acc, 'metrics/precision': p, 
+                   'metrics/recall': r, 'metrics/f1-score': f1}
+        if is_print:
+            print('Eval finished, acc {:.3f}, p {:.3f}, r {:.3f}, f1 {:.3f}'.format(acc, p, r, f1))
+        if self.config.task == 'IMDB':
+            me = np.mean(np.abs(labels_all-predicts_all))
+            metric_res['metrics/mean-error'] = me
+            if is_print:
+                print('mean error: {:.3f}'.format(me))
+        return metric_res
+    
     def get_batch_data(self, data):
         inputs, labels = [], []
         for sample in data:
@@ -61,42 +94,42 @@ class Processor(object):
     def train(self, output):
         if self.config.use_gpu:
             self.model.cuda()
+        writer = SummaryWriter('runs/' + self.config.to_str())
         best_para = self.model.state_dict()
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.config.lr)
-        train, eval = self.store.train, self.store.eval
+        train = self.store.train
         train_steps = (len(train) - 1) // self.config.batch_size + 1
-        eval_steps = (len(eval) - 1) // self.config.batch_size + 1
-        training_range = tqdm.tqdm(range(self.config.epochs))
-        training_range.set_description("Epoch %d | loss: %.3f" % (0, 0))
+        
         min_loss = 1e16
-        for epoch in training_range:
-            res = 0.0
-            random.shuffle(train)
-            for i in range(train_steps):
-                inputs, labels = self.get_batch_data(train[i*self.config.batch_size: (i+1)*self.config.batch_size])
-                loss = self.train_one_step(inputs, labels)
-                res += loss
-            res /= train_steps
-            training_range.set_description("Epoch %d | loss: %.3f" % (epoch, res))
-            if res < min_loss:
-                min_loss = res
-                best_para = self.model.state_dict()
+        try:
+            for epoch in range(self.config.epochs):
+                training_range = tqdm.tqdm(range(train_steps))
+                training_range.set_description("Epoch %d, Iter %d | loss: " % (epoch, 0))
+                res = 0.0
+                log_res = 0.0
+                random.shuffle(train)
+                for i in training_range:
+                    inputs, labels = self.get_batch_data(train[i*self.config.batch_size: (i+1)*self.config.batch_size])
+                    loss = self.train_one_step(inputs, labels)
+                    res += loss
+                    log_res += loss
+                    if i > 0 and i % self.config.log_interval == 0:
+                        log_res /= self.config.log_interval
+                        training_range.set_description("Epoch %d, Iter %d | loss: %.3f" % (epoch, i, log_res))
+                        writer.add_scalar('loss/train', log_res, epoch * train_steps + i)
+                        log_res = 0.0
+                        metric_res = self.evaluate(self.store.eval)
+                        for key, value in metric_res.items():
+                            writer.add_scalar(key, value, epoch * train_steps + i)
+                res /= train_steps
+                if res < min_loss:
+                    min_loss = res
+                    best_para = self.model.state_dict()
+        except KeyboardInterrupt:
+            writer.close()
+            print('-' * 89)
+            print('Exiting from training early')
+
         self.model.load_state_dict(best_para)
         print('Train finished, min_loss {:.3f}'.format(min_loss))
-        self.model.eval()
-        labels_all = np.array([])
-        predicts_all = np.array([])
-        for i in range(eval_steps):
-            inputs, labels = self.get_batch_data(eval[i*self.config.batch_size: (i+1)*self.config.batch_size])
-            predicts, loss = self.eval_one_step(inputs, labels)
-            labels_all = np.append(labels_all, labels)
-            predicts_all = np.append(predicts_all, predicts)
-        labels_all = labels_all.flatten()
-        predicts_all = predicts_all.flatten()
-        acc = metrics.accuracy_score(labels_all, predicts_all)
-        p = metrics.precision_score(labels_all, predicts_all, average='weighted')
-        r = metrics.recall_score(labels_all, predicts_all, average='weighted')
-        f1 = metrics.f1_score(labels_all, predicts_all, average='weighted')
-        print('Eval finished, acc {:.3f}, p {:.3f}, r {:.3f}, f1 {:.3f}'.format(acc, p, r, f1))
-        if self.config.task == 'IMDB':
-            print('mean error: {:.3f}'.format(np.mean(np.abs(labels_all-predicts_all))))
+        self.evaluate(self.store.test, True)

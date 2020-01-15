@@ -27,6 +27,7 @@ def train():
     parser.add_argument('-max_length', type=int, default=32)
     parser.add_argument('-output', type=str, default=None)
     parser.add_argument('-save_dir', type=str, default='result/')
+    parser.add_argument('-log_interval', type=int, default=10)
     args = parser.parse_args()
     if not os.path.exists('result/'):
         os.mkdir('result/')
@@ -34,7 +35,7 @@ def train():
         os.mkdir('tmp/')
     store = DataHandler(args.model, args.task, args.max_dialog_words, args.max_length)
     store.prepare_data()
-    config = Config(store, args.use_cpu, args.epochs)
+    config = Config(store, args.use_cpu, args.epochs, args.log_interval)
     model = name_to_model(args.model, config)
     processor = Processor(model, store, config)
     processor.train(args.output)

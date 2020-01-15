@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 class Config:
-    def __init__(self, store, use_cpu, epochs):
+    def __init__(self, store, use_cpu, epochs, log_interval):
         self.model_name = store.model_name
         self.task = store.task
         assert self.task
@@ -23,9 +23,14 @@ class Config:
             self.num_class = 2
         self.use_gpu = not use_cpu
         self.save_dir = 'result/'
+        self.log_interval = log_interval
     
     def to_torch(self, x):
         if self.use_gpu:
             return torch.from_numpy(x).cuda()
         else:
             return torch.from_numpy(x)
+    
+    def to_str(self):
+        return '_'.join([self.model_name, self.task, 'vd'+str(self.vocab_dim), 'dd'+str(self.dialog_dim), 'fd'+str(self.feature_dim),
+                         'e'+str(self.epochs), 'bs'+str(self.batch_size), 'lr'+str(self.lr), 'fs'+'-'.join([str(x) for x in self.filter_sizes])])
