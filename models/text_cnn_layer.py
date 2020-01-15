@@ -15,6 +15,5 @@ class TextCNN(nn.Module):
 
     def forward(self, input):
         x = input.unsqueeze(1)
-        out = torch.cat([self.conv_and_pool(input, conv) for conv in self.convs], 1)
-        out = self.fc(out)
+        out = torch.cat([self.conv_and_pool(x, conv) for conv in self.convs], 1)
         return out

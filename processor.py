@@ -15,10 +15,13 @@ class Processor(object):
         self.model = model
         self.store = store
         self.config = config
-        if config.task == 'classification':
-            self.loss_func = F.binary_cross_entropy
+    
+    def loss_func(self, outputs, labels):
+        if self.config.task == 'genre':
+            loss = F.binary_cross_entropy(F.sigmoid(outputs), labels)
         else:
-            self.loss_func = F.l1_loss
+            loss = F.cross_entropy(outputs, labels)
+        return loss
     
     def train_one_step(self, inputs, labels):
         labels = self.config.to_torch(labels)
@@ -35,11 +38,11 @@ class Processor(object):
             outputs = self.model(inputs)
             loss = self.loss_func(outputs, labels)
             predicts = outputs.data.cpu().numpy()
-            if self.config.task == 'classification':
+            if self.config.task == 'genre':
                 predicts[predicts>0.5] = 1
                 predicts[predicts<=0.5] = 0
             else:
-                predicts = np.round(predicts*10)/10
+                predicts = np.argmax(predicts, 1)
         return predicts, loss
     
     def get_batch_data(self, data):
@@ -49,18 +52,18 @@ class Processor(object):
             inputs.append(input)
             labels.append(label)
         inputs = self.config.to_torch(np.array(inputs))
-        if config.task == 'classification':
-            labels = np.array(labels, dtype=np.int64)
-        else:
+        if self.config.task == 'genre':
             labels = np.array(labels, dtype=np.float32)
+        else:
+            labels = np.array(labels, dtype=np.int64)
         return inputs, labels
     
-    def run(self, output):
+    def train(self, output):
         if self.config.use_gpu:
             self.model.cuda()
         best_para = self.model.state_dict()
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.config.lr)
-        train, eval = self.store.prepare_data()
+        train, eval = self.store.train, self.store.eval
         train_steps = (len(train) - 1) // self.config.batch_size + 1
         eval_steps = (len(eval) - 1) // self.config.batch_size + 1
         training_range = tqdm.tqdm(range(self.config.epochs))
@@ -73,6 +76,7 @@ class Processor(object):
                 inputs, labels = self.get_batch_data(train[i*self.config.batch_size: (i+1)*self.config.batch_size])
                 loss = self.train_one_step(inputs, labels)
                 res += loss
+            res /= train_steps
             training_range.set_description("Epoch %d | loss: %.3f" % (epoch, res))
             if res < min_loss:
                 min_loss = res
@@ -89,12 +93,10 @@ class Processor(object):
             predicts_all = np.append(predicts_all, predicts)
         labels_all = labels_all.flatten()
         predicts_all = predicts_all.flatten()
-        if self.config.task == 'classification':
-            acc = metrics.accuracy_score(labels_all, predicts_all)
-            p = metrics.precision_score(labels_all, predicts_all, average='weighted')
-            r = metrics.recall_score(labels_all, predicts_all, average='weighted')
-            f1 = metrics.f1_score(labels_all, predicts_all, average='weighted')
-            print('Eval finished, acc {:.3f}, p {:.3f}, r {:.3f}, f1 {:.3f}'.format(acc, p, r, f1))
-        else:
-            error = np.mean(np.abs(labels_all-predicts_all))
-            print('Eval finished, mean error {:.3f}'.format(error))
+        acc = metrics.accuracy_score(labels_all, predicts_all)
+        p = metrics.precision_score(labels_all, predicts_all, average='weighted')
+        r = metrics.recall_score(labels_all, predicts_all, average='weighted')
+        f1 = metrics.f1_score(labels_all, predicts_all, average='weighted')
+        print('Eval finished, acc {:.3f}, p {:.3f}, r {:.3f}, f1 {:.3f}'.format(acc, p, r, f1))
+        if self.config.task == 'IMDB':
+            print('mean error: {:.3f}'.format(np.mean(np.abs(labels_all-predicts_all))))
