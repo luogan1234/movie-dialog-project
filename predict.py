@@ -72,7 +72,7 @@ if __name__ == "__main__":
     print(list(vocab_map.items())[:5])
 
     bc = BertClient()
-    movie = ['First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it First do it', 
+    movie = ['First do it', 
              'then do it right', 'then do it better']
     vecs, tokens = bc.encode(movie, show_tokens=True)
     print(tokens)
