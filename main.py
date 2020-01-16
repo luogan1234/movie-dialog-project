@@ -22,7 +22,7 @@ def train():
     parser.add_argument('-model', type=str, required=True, choices=['pretrain', 'vocab'], help='pretrain | vocab')
     parser.add_argument('-task', type=str, required=True, choices=['IMDB', 'genre', 'gender'], help='IMDB | genre | gender')
     parser.add_argument('-use_cpu', action='store_true')
-    parser.add_argument('-epochs', type=int, default=12)
+    parser.add_argument('-epochs', type=int, default=10)
     parser.add_argument('-max_dialog_words', type=int, default=64)
     parser.add_argument('-vocab_dim', type=int, default=32)
     parser.add_argument('-dialog_dim', type=int, default=128)

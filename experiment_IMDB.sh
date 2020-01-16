@@ -15,7 +15,7 @@ for model in "vocab" "pretrain"; do
       done
     done
     for feature_dim in 128 256 384; do
-      for t in {1..4}; do
+      for t in {1..1}; do
         cmd="python main.py -model $model -task $task -feature_dim $feature_dim"
         echo $cmd
         $cmd
