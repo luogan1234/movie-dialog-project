@@ -19,7 +19,7 @@
 <!--</div>-->
 {% load static %}
 
-    <img src="{% static "background2.png" %}" width="100%" height="280" />
+    <img src="{% static "background_new.png" %}" width="100%" height="280" />
 <nav class="navbar navbar-inverse">
 
   <div class="container-fluid">
@@ -33,10 +33,10 @@
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
-           <li ><a href="{% url 'test' %}">Introduction</a></li>
-        <li><a href="{% url 'predict_genre' %}">Movie Genres Prediciton</a></li>
-        <li><a href="{% url 'predict_rating' %}">Movie Rating Prediction</a></li>
-        <li class="active"><a href="{% url 'predict_gender' %}">Character Gender Prediction</a></li>
+           <li style="font-size:120%;"><a href="{% url 'test' %}">Introduction</a></li>
+        <li style="font-size:120%;"><a href="{% url 'predict_genre' %}">Movie Genres Prediciton</a></li>
+        <li style="font-size:120%;"><a href="{% url 'predict_rating' %}">Movie Rating Prediction</a></li>
+        <li class="active" style="font-size:120%;"><a href="{% url 'predict_gender' %}">Character Gender Prediction</a></li>
       </ul>
     </div>
   </div>
@@ -58,7 +58,7 @@
   <div class="col-md-5">
     <h2>Prediction Results:</h2>
     {% for item in predict_gender_result%}
-      <p>{{ item }}</p>
+      <p style="font-size:120%;">{{ item }}</p >
     {% endfor %}
   </div>
 </div>

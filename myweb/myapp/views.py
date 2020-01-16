@@ -48,6 +48,14 @@ def evaluate(model, inputs, task, max_dialog_words):
 def load_model(model, task):
     return apps.preload_models[task]
 
+def filter_empty_line(data):
+    result = []
+    for line in data:
+        line = line.strip()
+        if len(line) > 0:
+            result.append(line)
+    return result
+
 def predict_gender(request):
     if request.method == "POST":
         predict_gender_conversation = request.POST.get("predict_gender_conversation", None)
@@ -61,6 +69,9 @@ def predict_gender(request):
 
         bc = BertClient()
         data = predict_gender_conversation.split('\n')
+        data = filter_empty_line(data)
+        if len(data) == 0:
+            return render(request, 'predict_gender.html')
         print(data)
         vecs, tokens = bc.encode(data, show_tokens=True)
         token_index = []
@@ -91,6 +102,9 @@ def predict_genre(request):
 
         bc = BertClient()
         data = predict_genre_conversation.split('\n')
+        data = filter_empty_line(data)
+        if len(data) == 0:
+            return render(request, 'predict_gender.html')
         print(data)
         vecs, tokens = bc.encode(data, show_tokens=True)
         token_index = []
@@ -121,6 +135,9 @@ def predict_rating(request):
 
         bc = BertClient()
         data = predict_rating_conversation.split('\n')
+        data = filter_empty_line(data)
+        if len(data) == 0:
+            return render(request, 'predict_gender.html')
         print(data)
         vecs, tokens = bc.encode(data, show_tokens=True)
         token_index = []
