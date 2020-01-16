@@ -1,10 +1,8 @@
 # movie-dialog-project
 
-##### ppt:
+##### ppt: https://drive.google.com/file/d/16qB1bAgU1oMPT2qa7oBkbVR13uRSPXUF/view?usp=sharing
 
-##### poster:
-
-##### demo:
+##### poster: https://drive.google.com/open?id=1LJMjeYjD06HMXtN9ZYmxshp6o-Af-sOQ
 
 ##### Reference:
 
