@@ -20,7 +20,7 @@ from myapp import views
 
 urlpatterns = [
     url(r'^predict_gender/$', views.predict_gender, name='predict_gender'),
-    url(r'^predict_character/$', views.predict_character, name='predict_character'),
+    url(r'^predict_genre/$', views.predict_genre, name='predict_genre'),
     url(r'^predict_rating/$', views.predict_rating, name='predict_rating'),
     #url(r'^show/$', views.list),
     url(r'^admin/', admin.site.urls),

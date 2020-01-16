@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Bootstrap 实例 - 一个简单的网页</title>
+	<title>Dialog-Based Movie Prediction</title>
 	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -33,10 +33,10 @@
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
-           <li ><a href="{% url 'test' %}">简介</a></li>
-        <li><a href="{% url 'predict_gender' %}">预测人物性别</a></li>
-        <li><a href="{% url 'predict_character' %}">预测电影人物</a></li>
-        <li class="active"><a href="{% url 'predict_rating' %}">预测电影评分</a></li>
+           <li ><a href="{% url 'test' %}">Introduction</a></li>
+        <li><a href="{% url 'predict_genre' %}">Movie Genres Prediciton</a></li>
+        <li class="active"><a href="{% url 'predict_rating' %}">Movie Rating Prediction</a></li>
+        <li><a href="{% url 'predict_gender' %}">Character Gender Prediction</a></li>
       </ul>
     </div>
   </div>
@@ -44,16 +44,16 @@
   <div class="row">
     <div class="col-sm-4">
 <form action="/predict_rating/" method="post"> {% csrf_token %}
-        <th>输入对话：</th>
+        <th>Input Dialog:</th>
         <input type="text" name="predict_rating_conversation"
         style="height:200px; width:450px"/>
-        <input type="submit" value="提交">
+        <input type="submit" value="Submit">
         <br>
 
     </form>
  </div>
     <div class="col-md-5">
-<h1>电影评分预测结果：</h1>
+<h1>Prediction Results:</h1>
     {% for item in predict_rating_result%}
     <p>{{ item }}</p>
     {% endfor %}
