@@ -41,24 +41,27 @@
     </div>
   </div>
 </nav>
-  <div class="row">
-    <div class="col-sm-4">
-<form action="/predict_genre/" method="post"> {% csrf_token %}
-        <th>Input Dialog:</th>
-        <input type="textarea" name="predict_genre_conversation"
-        style="height:200px; width:450px"/>
-        <input type="submit" value="Submit">
-        <br>
 
+<div class="container">
+  <div class="col-sm-4">
+    <form action="/predict_genre/" method="post"> {% csrf_token %}
+      <h2>Input Dialogs:</h2>
+      <textarea type="text" name="predict_genre_conversation"
+      style="height:200px; width:600px"></textarea>
+      <input type="submit" value="Submit">
+      <br>
     </form>
- </div>
-    <div class="col-sm-8">
-<h1>Prediction Results:</h1>
-    {% for item in predict_genre_result%}
-    <p>{{ item }}</p>
-    {% endfor %}
-            </div>
   </div>
+  <HR style= " FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width ="90%" color =#aaa cb 9 SIZE = 3>
+
+  <div class="col-md-5">
+    <h2>Prediction Results:</h2>
+    {% for item in predict_genre_result%}
+      <p>{{ item }}</p>
+    {% endfor %}
+  </div>
+</div>
+
 <!-- JavaScript 放置在文档最后面可以使页面加载速度更快 -->
     <!-- 可选: 包含 jQuery 库 -->
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>

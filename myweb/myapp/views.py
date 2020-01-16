@@ -4,31 +4,17 @@ from myapp import models
 import numpy as np
 import torch
 import tensorflow as tf
-import torch.nn.functional as Fun
+import torch.nn.functional as F
 import sys
 import os
 
-sys.path.append("..")
-sys.path.extend([os.path.join(root, name) for root, dirs, _ in os.walk("..") for name in dirs])
-
-from data_handler import DataHandler
-from processor import Processor
-from config import Config
-from models.pretrain_model import PretrainModel
-from models.vocab_model import VocabModel
 from bert_serving.client import BertClient
+import myapp.apps as apps
 
 # Create your views here.
 
 def index(request):
     return render(request, 'index.html')
-
-def name_to_model(name, config):
-    if name == 'pretrain':
-        return PretrainModel(config)
-    if name == 'vocab':
-        return VocabModel(config)
-    raise NotImplementedError
 
 def evaluate(model, inputs, task, max_dialog_words):
     model.eval()
@@ -47,6 +33,12 @@ def evaluate(model, inputs, task, max_dialog_words):
 
     with torch.no_grad():
         outputs = model(inputs)
+        if task == 'IMDB':
+            outputs = F.softmax(outputs, -1)
+        elif task == 'genre':
+            outputs = torch.sigmoid(outputs)
+        elif task == 'gender':
+            outputs = F.softmax(outputs, -1)
         predicts = outputs.data.cpu().numpy()[0]
         predicts = [(i, predicts[i]) for i in range(len(predicts))]
         predicts.sort(key=lambda x:x[1], reverse=True)
@@ -54,21 +46,7 @@ def evaluate(model, inputs, task, max_dialog_words):
     return predicts
 
 def load_model(model, task):
-    use_cpu = False
-    epochs = 20
-    max_dialog_words = 64
-    vocab_dim = 32
-    dialog_dim = 128
-    feature_dim = 256
-    log_interval = 10
-
-    store = DataHandler(model, task, max_dialog_words)
-    config = Config(store, use_cpu, epochs, vocab_dim, dialog_dim, feature_dim, log_interval)
-    save_path = os.path.join('/home/yukuo/movie-dialog-project/result', '{}_{}_{}_{}_{}.ckpt'.format(model, task, vocab_dim, dialog_dim, feature_dim))
-    model = name_to_model(model, config)
-    model.load_state_dict(torch.load(save_path))
-    model.cuda()
-    return model
+    return apps.preload_models[task]
 
 def predict_gender(request):
     if request.method == "POST":
@@ -85,17 +63,18 @@ def predict_gender(request):
         data = predict_gender_conversation.split('\n')
         print(data)
         vecs, tokens = bc.encode(data, show_tokens=True)
-        print(tokens)
         token_index = []
         for dialog in tokens:
             token_index.append([])
             for token in dialog[1:-1]:
                 if token in vocab_map:
                     token_index[-1].append(vocab_map[token])
-        print(token_index)
-        evaluate(model, token_index, 'gender', 64)
+        predicts = evaluate(model, token_index, 'gender', 64)
+        results = []
+        for index, pred in predicts:
+            results.append(['female' if index == 0 else 'male', pred])
 
-        return render(request, 'predict_gender.html', {'predict_gender_result': pred_y})
+        return render(request, 'predict_gender.html', {'predict_gender_result': results})
 
     return render(request, 'predict_gender.html')
 
@@ -114,17 +93,18 @@ def predict_genre(request):
         data = predict_genre_conversation.split('\n')
         print(data)
         vecs, tokens = bc.encode(data, show_tokens=True)
-        print(tokens)
         token_index = []
         for dialog in tokens:
             token_index.append([])
             for token in dialog[1:-1]:
                 if token in vocab_map:
                     token_index[-1].append(vocab_map[token])
-        print(token_index)
-        predicts = evaluate(model, token_index, 'genre', 64)[:5]
+        predicts = evaluate(model, token_index, 'genre', 64)[:3]
+        results = []
+        for index, pred in predicts:
+            results.append([apps.genre_rmap[index], pred])
 
-        return render(request, 'predict_genre.html', {'predict_genre_result': predicts})
+        return render(request, 'predict_genre.html', {'predict_genre_result': results})
 
     return render(request, 'predict_genre.html')
 
@@ -134,26 +114,24 @@ def predict_rating(request):
         password = request.POST.get("password", None)
 
         print("Using loaded model to predict......")
-        #load_model = keras_load_model("D:/mlwc/iris_model/iris_modeliris_model.h5")
 
-        np.set_printoptions(precision=4)
+        model = load_model('vocab', 'IMDB')
 
-        unknown = np.array([predict_rating_conversation.split(" ")], dtype=np.float32)
-        unknown = torch.Tensor(unknown)
-        print(type(unknown))
-        net = torch.load('D:/mlwc/iris_model/net.pkl')
-        predicted = Fun.softmax(net(unknown))
-        print("\nfinally.......Predicted softmax vector is: ")
-        print(predicted)
-        prediction = torch.max(predicted, 1)[1]  # 1返回index  0返回原值
-        pred_y = prediction.data.numpy()
-        print("predicted_lable=", pred_y)
+        vocab_map = np.load('/home/yukuo/movie-dialog-project/dataset/vocab_map.npy', allow_pickle=True)[()]
 
-        #twz = models.message.objects.create(username=username, password=password, predict_result=predicted)
-        #objects.create 往数据表中插入内容的方法
-        #twz.save()
+        bc = BertClient()
+        data = predict_rating_conversation.split('\n')
+        print(data)
+        vecs, tokens = bc.encode(data, show_tokens=True)
+        token_index = []
+        for dialog in tokens:
+            token_index.append([])
+            for token in dialog[1:-1]:
+                if token in vocab_map:
+                    token_index[-1].append(vocab_map[token])
+        predicts = evaluate(model, token_index, 'IMDB', 64)[:3]
 
-        return render(request, 'predict_rating.html', {'predict_rating_result': pred_y})
+        return render(request, 'predict_rating.html', {'predict_rating_result': predicts})
 
     return render(request, 'predict_rating.html')
 
