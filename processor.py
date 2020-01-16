@@ -70,12 +70,14 @@ class Processor(object):
         metric_res = {'loss/eval': res, 'metrics/acc': acc, 'metrics/precision': p, 
                    'metrics/recall': r, 'metrics/f1-score': f1}
         if is_print:
-            print('Eval finished, acc {:.3f}, p {:.3f}, r {:.3f}, f1 {:.3f}'.format(acc, p, r, f1))
-        if self.config.task == 'IMDB':
-            me = np.mean(np.abs(labels_all-predicts_all))
-            metric_res['metrics/mean-error'] = me
-            if is_print:
-                print('mean error: {:.3f}'.format(me))
+            print('Evaluate finished, acc {:.3f}, p {:.3f}, r {:.3f}, f1 {:.3f}'.format(acc, p, r, f1))
+            output = '{}_{}_result.txt'.format(self.config.model_name, self.config.task)
+            if not os.path.exists(output):
+                with open(output, 'w', encoding='utf-8') as f:
+                    f.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format('model_name', 'task', 'vocab_dim', 'dialog_dim', 'feature_dim', 'max_dialog_words', 'max_length', 'accuracy', 'precision', 'recall', 'f1-score'))
+            with open(output, 'a', encoding='utf-8') as f:
+                f.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\n'.format(self.config.model_name, self.config.task, self.config.vocab_dim, self.config.dialog_dim, self.config.feature_dim, self.store.max_dialog_words, self.store.max_length, acc, p, r, f1))
+                
         return metric_res
     
     def get_batch_data(self, data):
@@ -91,7 +93,7 @@ class Processor(object):
             labels = np.array(labels, dtype=np.int64)
         return inputs, labels
     
-    def train(self, output):
+    def train(self):
         if self.config.use_gpu:
             self.model.cuda()
         writer = SummaryWriter('runs/' + self.config.to_str())

@@ -18,8 +18,8 @@ class VocabModel(nn.Module):
         xs = self.vocab_embeddings(input)
         outs = []
         for x in xs:
-            outs.append(self.textcnn1(x).unsqueeze(0))
-        out = torch.cat(outs)
+            outs.append(self.textcnn1(x))
+        out = torch.stack(outs)
         out = self.textcnn2(out)
         out = self.fc(out)
         return out

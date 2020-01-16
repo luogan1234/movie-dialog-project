@@ -2,16 +2,16 @@ import numpy as np
 import torch
 
 class Config:
-    def __init__(self, store, use_cpu, epochs, log_interval):
+    def __init__(self, store, use_cpu, epochs, vocab_dim, dialog_dim, feature_dim, log_interval):
         self.model_name = store.model_name
         self.task = store.task
         assert self.task
         
         self.vocabs = store.vocabs
-        self.vocab_dim = 128
-        self.dialog_dim = 768
-        self.feature_dim = 256
-        self.filter_sizes = (3, 5, 7, 9)
+        self.vocab_dim = vocab_dim
+        self.dialog_dim = dialog_dim
+        self.feature_dim = feature_dim
+        self.filter_sizes = (2, 3, 5, 7)
         self.epochs = epochs
         self.batch_size = 32
         self.lr = 1e-3
@@ -19,8 +19,8 @@ class Config:
             self.num_classes = 10
         if self.task == 'genre':
             self.num_classes = 24
-        if self.task != 'gender':
-            self.num_class = 2
+        if self.task == 'gender':
+            self.num_classes = 2
         self.use_gpu = not use_cpu
         self.save_dir = 'result/'
         self.log_interval = log_interval

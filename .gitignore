@@ -127,6 +127,8 @@ dmypy.json
 dataset/
 result/
 tmp/
+runs/
+*.txt
 
 # Pyre type checker
 .pyre/
