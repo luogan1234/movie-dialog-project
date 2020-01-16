@@ -129,6 +129,7 @@ result/
 tmp/
 runs/
 *.txt
+draw/
 
 # Pyre type checker
 .pyre/
